@@ -1,0 +1,81 @@
+version: "3.5"
+
+services:
+  label-studio:
+    container_name: label-studio
+    image: heartexlabs/label-studio:latest
+    user: root
+    volumes:
+      - /home/datasets/data:/label-studio/data
+      # separate mount for each dataset
+      - /home/datasets/ppe:/label-studio/files/ppe
+      - /home/datasets/otter:/label-studio/files/otter
+    environment:
+      - LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+      - LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=/label-studio/files
+      - LABEL_STUDIO_HOST=https://rtx1.v3nity.com/annotate/
+      - LABEL_STUDIO_DISABLE_SIGNUP_WITHOUT_LINK=true
+    restart: unless-stopped
+    mem_limit: 2G
+    storage_opt:
+      size: 10G
+    networks:
+      - tanush
+
+  ocr-ie:
+    container_name: xtract
+    image: registry.gitlab.com/imda_dsl/ai-shopfloor/smart-scanner/xtract/api:latest
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "5"
+    environment:
+      - 'WORKERS=1'
+    restart: unless-stopped
+    networks:
+      - tanush
+
+  ga-model:
+    container_name: ga-container
+    build: ./ga-predictive-maintenance
+    image: aiteamv3/ga-model:latest
+    restart: unless-stopped
+    volumes:
+      - ./ga-predictive-maintenance/outputs:/code/outputs
+      - ./ga-predictive-maintenance/valid_vehicles.csv:/code/valid_vehicles.csv
+      - ./ga-predictive-maintenance/logs.txt:/code/logs.txt
+      - /usr/bin/nvidia-smi:/usr/bin/nvidia-smi:ro
+    environment:
+      - TZ=Asia/Singapore
+    networks:
+      - tanush
+    
+  nginx:
+    container_name: nginx-tanush
+    image: nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./nginx/static:/static
+    environment:
+      - TZ=Asia/Singapore
+    networks:
+      - tanush
+  
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./nginx/static:/webroot:rw
+      - /etc/letsencrypt:/etc/letsencrypt/:rw
+    networks:
+      - tanush
+      
+
+networks:
+  tanush:
+    name: tanush
