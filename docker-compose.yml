@@ -1,15 +1,12 @@
 version: "3.5"
-
 services:
   label-studio:
     container_name: label-studio
     image: heartexlabs/label-studio:latest
     user: root
     volumes:
-      - /home/datasets/data:/label-studio/data
-      # separate mount for each dataset
-      - /home/datasets/ppe:/label-studio/files/ppe
-      - /home/datasets/otter:/label-studio/files/otter
+      - /opt/label-studio/data:/label-studio/data
+      - /opt/label-studio/datasets:/label-studio/files
     environment:
       - LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
       - LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=/label-studio/files
