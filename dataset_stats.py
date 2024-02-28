@@ -19,7 +19,7 @@ def main(folder):
         print(f'no .txt files found in {folder}')
         return
     
-    # read each .txt files
+    # read each .txt file
     all_ids = []
     negatives = 0     
     for file in all_files:
@@ -28,6 +28,7 @@ def main(folder):
         annos = [line.strip() for line in lines]
         if len(annos) == 0:
             negatives += 1
+            continue
         ids = [anno[0] for anno in annos]
         for id in ids:
             all_ids.append(id)
