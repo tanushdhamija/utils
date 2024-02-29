@@ -3,10 +3,8 @@ import os
 import sys
 from random import randint
 
-
 def get_color():
     return [(randint(0,255),randint(0,255),randint(0,255)) for _ in range(len(CLASSES))]
-
 
 def parse_annotation(annotation_file):
     with open(annotation_file, 'r') as f:
@@ -18,7 +16,6 @@ def parse_annotation(annotation_file):
         parsed_annotations.append((int(class_id), x_center, y_center, width, height))
     
     return parsed_annotations
-
 
 def draw_annotations(image, annotations):
     im_height, im_width, _ = image.shape
@@ -35,12 +32,13 @@ def draw_annotations(image, annotations):
 
     return image
 
-
 def display_annotated_images(image_folder, annotation_folder):
     image_files = sorted(os.listdir(image_folder))
     annotation_files = sorted(os.listdir(annotation_folder))
-
-    for annotation_file in annotation_files:
+    
+    current_index = 0
+    while current_index < len(annotation_files):
+        annotation_file = annotation_files[current_index]
         image_name = os.path.splitext(annotation_file)[0] + ".jpg"
         if image_name in image_files:
             image_path = os.path.join(image_folder, image_name)
@@ -55,8 +53,12 @@ def display_annotated_images(image_folder, annotation_folder):
             cv2.destroyAllWindows()
             if key & 0xFF == ord('q'):
                 break
+            elif key & 0xFF == ord('n'):
+                current_index = min(current_index + 1, len(annotation_files) - 1)
+            elif key & 0xFF == ord('p'):
+                current_index = max(current_index - 1, 0)
     cv2.destroyAllWindows()
-
+    
 
 if __name__ == '__main__':
     if not os.path.exists('images') or not os.path.exists('labels') or not os.path.isfile('classes.txt'):
@@ -71,5 +73,5 @@ if __name__ == '__main__':
     CLASSES = [line.strip() for line in lines]
     COLORS = get_color()
 
-    print("press 'q' to quit")
+    print("press 'q' to quit, 'n' for next image, 'p' for previous image")
     display_annotated_images(image_folder, annotation_folder)
