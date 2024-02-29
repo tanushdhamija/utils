@@ -29,18 +29,18 @@ def main(folder):
         if len(annos) == 0:
             negatives += 1
             continue
-        ids = [anno[0] for anno in annos]
+        ids = [anno.split(' ')[0] for anno in annos]
         for id in ids:
             all_ids.append(id)
     
     # print stats
     counter = Counter(sorted(all_ids))
     negatives_percent = round(negatives/len(all_files)*100,1)
-    print(f'images: {len(all_files)} ({len(all_files)-negatives}({100-negatives_percent}%) + {negatives}({negatives_percent}%))')
+    print(f'\nimages: {len(all_files)} ({len(all_files)-negatives}({100-negatives_percent}%) + {negatives}({negatives_percent}%))')
     print(f'annotations: {len(all_ids)}')
     print(f'classes: {len(counter)}\n')
     for value,count in counter.items():
-        print(f'class {value}: {count}')
+        print(f'class {value}: {count} ({round(count/len(all_ids) *100,1)}%)')
 
 
 if __name__ == "__main__":
