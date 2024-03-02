@@ -36,11 +36,13 @@ def main(folder):
     # print stats
     counter = Counter(sorted(all_ids))
     negatives_percent = round(negatives/len(all_files)*100,1)
-    print(f'\nimages: {len(all_files)} ({len(all_files)-negatives}({100-negatives_percent}%) + {negatives}({negatives_percent}%))')
+    print(f"{'-'*40}")
+    print(f'images: {len(all_files)} ({len(all_files)-negatives}({100-negatives_percent}%) + {negatives}({negatives_percent}%))')
     print(f'annotations: {len(all_ids)}')
     print(f'classes: {len(counter)}\n')
     for value,count in counter.items():
         print(f'class {value}: {count} ({round(count/len(all_ids) *100,1)}%)')
+    print(f"{'-'*40}")
 
 
 if __name__ == "__main__":

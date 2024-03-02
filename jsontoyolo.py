@@ -79,52 +79,45 @@ def rotated_rectangle(label):
 
 
 
-def main():
+def main(filename):
+
+    SAVE_FOLDER = "labels"
+    if not os.path.exists(SAVE_FOLDER):
+        os.makedirs(SAVE_FOLDER)
+
     with open('classes.txt', 'w') as f:
         for class_name in CLASSES:
             f.write(f'{class_name}\n')
     print(f'Using class names: {CLASSES} (created classes.txt)')
-    SAVE_FOLDER = "labels"
-
-    if len(sys.argv) != 2:
-        print("Usage: python3 jsontoyolo.py <filename.json>")
-        return
     
-    filename = sys.argv[1]
-    if not os.path.exists(filename):
-        print("File not found:", filename)
-        return
-    
-    with open(filename) as f:
+    with open(filename, 'r') as f:
         data = json.load(f)
-    
-    if not os.path.exists(SAVE_FOLDER):
-        os.makedirs(SAVE_FOLDER)
     
     print(f'No. of annotations found: {len(data)}')
     for anno in data:
         txt_filename = os.path.join(SAVE_FOLDER, f"{os.path.splitext(anno['image'].split('/')[-1])[0]}.txt")
+
         if not 'label' in anno.keys():
-        # create empty .txt file for negative
+            # create empty .txt file for negative
             with open(txt_filename, 'w') as f:
                 pass
             continue
 
+        # collect annotations
         labels = anno['label']
         annotations = []
         for label in labels:
             x,y,w,h = rotated_rectangle(label)
             class_id = CLASSES.index(label['rectanglelabels'][0])
-            annotations.append(
-                [
+            annotations.append([
                  class_id, 
                  (x + w / 2) / 100, 
                  (y + h / 2) / 100,
                  w / 100,
                  h / 100
-                 ]
-            )
+                 ])
         
+        # write annotaions to file
         with open(txt_filename, 'w') as f:
             for annotation in annotations:
                 for idx,l in enumerate(annotation):
@@ -137,5 +130,15 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+
+    if len(sys.argv) != 2:
+        print("Usage: python3 jsontoyolo.py <filename.json>")
+        sys.exit(1)
+
+    filename = sys.argv[1]
+    if not os.path.isfile(filename):
+        print("File not found:", filename)
+        sys.exit(1)
+
+    main(filename)
     
