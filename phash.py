@@ -4,9 +4,8 @@ import sys
 from PIL import Image
 import imagehash
 
-def find_similar_images(image_dir, hash_length=8):
-
-    image_paths = [os.path.join(image_dir, f) for f in os.listdir(image_dir) if f.endswith(('.png', '.jpg', '.jpeg'))]
+def find_similar_images(image_directory, hash_length):
+    image_paths = [os.path.join(image_directory, f) for f in os.listdir(image_directory) if f.endswith(('.png', '.jpg', '.jpeg'))]
     similar_images = {}
 
     for _,img_path in enumerate(image_paths):
@@ -21,23 +20,23 @@ def find_similar_images(image_dir, hash_length=8):
     return similar_images, len(image_paths)
 
 
-def remove_similar_images(image_dir, hash_length=8):
- 
-    similar_images, total_imgs = find_similar_images(image_dir, hash_length)
-    count = 0
+def remove_similar_images(image_directory, hash_length):
+    print(f'using hash size of: {hash_length}')
+    similar_images, total_imgs = find_similar_images(image_directory, hash_length)
+    removed = 0
+
     for img_paths in similar_images.values():
         if len(img_paths) > 1:
             # randomly choose one image to keep
             img_to_keep = random.choice(img_paths)
             img_paths.remove(img_to_keep)
-            for img_path in img_paths:
-                # print(f"Removing {img_path}")
-                os.remove(img_path)
-                count += 1
+            # remove the rest
+            os.remove([img for img in img_paths])
+            removed += len(img_paths)
 
     # print info
-    print(f'imgs removed: {count}(out of {total_imgs}) - {round(count/total_imgs *100,1)}%')
-    print(f'imgs remaining: {len(os.listdir(image_dir))}')
+    print(f'imgs removed: {removed}(out of {total_imgs}) - {round(removed/total_imgs *100,1)}%')
+    print(f'imgs remaining: {len(os.listdir(image_directory))}')
 
 
 if __name__ == "__main__":
