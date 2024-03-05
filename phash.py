@@ -21,7 +21,7 @@ def find_similar_images(image_directory, hash_length):
 
 
 def remove_similar_images(image_directory, hash_length):
-    print(f'using hash size of: {hash_length}')
+    print(f'using hash size: {hash_length}\n.\n.\n.')
     similar_images, total_imgs = find_similar_images(image_directory, hash_length)
     removed = 0
 
@@ -31,7 +31,8 @@ def remove_similar_images(image_directory, hash_length):
             img_to_keep = random.choice(img_paths)
             img_paths.remove(img_to_keep)
             # remove the rest
-            os.remove([img for img in img_paths])
+            for img in img_paths:
+                os.remove(img)
             removed += len(img_paths)
 
     # print info
