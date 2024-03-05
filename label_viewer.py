@@ -38,6 +38,7 @@ def display_annotated_images(image_folder, annotation_folder):
     
     current_index = 0
     while current_index < len(annotation_files):
+        counter = f'{current_index+1}/{len(annotation_files)}: '
         annotation_file = annotation_files[current_index]
         image_name = os.path.splitext(annotation_file)[0] + ".jpg"
         if image_name in image_files:
@@ -48,26 +49,38 @@ def display_annotated_images(image_folder, annotation_folder):
             annotations = parse_annotation(annotation_path)
             annotated_image = draw_annotations(image, annotations)
 
-            cv2.imshow(image_name, annotated_image)
+            if len(annotations) == 0:
+                cv2.imshow(f'{counter} {image_name} (NEGATIVE)', annotated_image)
+            else:
+                cv2.imshow(f'{counter} {image_name}', annotated_image)
             key = cv2.waitKey(0)
             cv2.destroyAllWindows()
+
             if key & 0xFF == ord('q'):
                 break
             elif key & 0xFF == ord('n'):
                 current_index = min(current_index + 1, len(annotation_files) - 1)
             elif key & 0xFF == ord('p'):
                 current_index = max(current_index - 1, 0)
+
     cv2.destroyAllWindows()
     
 
 if __name__ == '__main__':
-    if not os.path.exists('images') or not os.path.exists('labels') or not os.path.isfile('classes.txt'):
-        print("make sure that the current directory contains: 'images', 'labels', 'classes.txt'")
+    if len(sys.argv) != 2:
+        print(f"usage: python {sys.argv[0]} </path/to/directory/containing/'images','lables','classes.txt'")
         sys.exit(1)
 
-    image_folder = 'images'
-    annotation_folder = 'labels'
-    with open('classes.txt', 'r') as file:
+    directory = sys.argv[1]
+    image_folder = os.path.join(directory,'images')
+    annotation_folder = os.path.join(directory,'labels')
+    class_file = os.path.join(directory,'classes.txt')
+
+    if not os.path.exists(image_folder) or not os.path.exists(annotation_folder) or not os.path.isfile(class_file):
+        print("make sure that the given directory contains: 'images', 'labels', 'classes.txt'")
+        sys.exit(1)
+
+    with open(class_file, 'r') as file:
         lines = file.readlines()
 
     CLASSES = [line.strip() for line in lines]
