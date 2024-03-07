@@ -3,6 +3,19 @@ import os
 import sys
 from random import randint
 
+def resize_image(image):
+    screen_width, screen_height = 1280, 720
+
+    if image.shape[1] > screen_width or image.shape[0] > screen_height:
+        ratio_width = screen_width / image.shape[1]
+        ratio_height = screen_height / image.shape[0]
+        scale_factor = min(ratio_width, ratio_height)
+        new_width = int(image.shape[1] * scale_factor)
+        new_height = int(image.shape[0] * scale_factor)
+        image = cv2.resize(image, (new_width, new_height))
+
+    return image
+
 def get_color():
     return [(randint(0,255),randint(0,255),randint(0,255)) for _ in range(len(CLASSES))]
 
@@ -28,13 +41,16 @@ def draw_annotations(image, annotations):
         y2 = int((y_center + height/2) * im_height)
 
         cv2.rectangle(image, (x1, y1), (x2, y2), COLORS[class_id], 2)
-        cv2.putText(image, f'{CLASSES[class_id]}', (x1,y1-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        cv2.putText(image, f'{CLASSES[class_id]}', (x1,y1-5), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
     return image
 
 def display_annotated_images(image_folder, annotation_folder):
     image_files = sorted(os.listdir(image_folder))
     annotation_files = sorted(os.listdir(annotation_folder))
+    if len(image_files) != len(annotation_files): 
+        print(f"mismatch in no. of images & labels (images: {len(image_files)}, labels: {len(annotation_files)})")
+        sys.exit(1)
     
     current_index = 0
     while current_index < len(annotation_files):
@@ -48,6 +64,7 @@ def display_annotated_images(image_folder, annotation_folder):
             image = cv2.imread(image_path)
             annotations = parse_annotation(annotation_path)
             annotated_image = draw_annotations(image, annotations)
+            annotated_image = resize_image(annotated_image)
 
             if len(annotations) == 0:
                 cv2.imshow(f'{counter} {image_name} (NEGATIVE)', annotated_image)
