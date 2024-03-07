@@ -68,7 +68,7 @@ def display_annotated_images(image_folder, annotation_folder):
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print(f"usage: python {sys.argv[0]} </path/to/directory/containing/'images','lables','classes.txt'")
+        print(f"usage: python {sys.argv[0]} </path/to/directory/containing/'images','labels','classes.txt'")
         sys.exit(1)
 
     directory = sys.argv[1]

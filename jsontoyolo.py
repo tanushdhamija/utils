@@ -13,7 +13,8 @@ import json
 import sys
 import math
 
-CLASSES = ['boot', 'glove', 'hard_hat', 'vest']
+#CLASSES = ['boot', 'glove', 'hard_hat', 'vest']
+CLASSES = ['plate']
 
 # https://github.com/HumanSignal/label-studio-converter/blob/master/label_studio_converter/converter.py#L901
 def rotated_rectangle(label):
@@ -126,7 +127,7 @@ def main(filename):
                     else:
                         f.write(f"{l} ")
 
-    print('.\n.\n.\nsaved.')
+    print(f".\n.\n.\nsaved at '{SAVE_FOLDER}'")
 
 
 if __name__ == "__main__":
