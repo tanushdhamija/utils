@@ -6,9 +6,12 @@ import imagehash
 
 def find_similar_images(image_directory, hash_length):
     image_paths = [os.path.join(image_directory, f) for f in os.listdir(image_directory) if f.endswith(('.png', '.jpg', '.jpeg'))]
-    similar_images = {}
+    if len(image_paths) == 0:
+        print(f'no images found in directory {image_directory}')
+        sys.exit(1)
 
-    for _,img_path in enumerate(image_paths):
+    similar_images = {}
+    for img_path in image_paths:
         img = Image.open(img_path)
         img_hash = imagehash.phash(img, hash_size=hash_length)
         
@@ -21,10 +24,13 @@ def find_similar_images(image_directory, hash_length):
 
 
 def remove_similar_images(image_directory, hash_length):
+    if not os.path.exists(image_directory):
+        print(f'directory {image_directory} does not exist.')
+        sys.exit(1)
+
     print(f'using hash size: {hash_length}\n.\n.\n.')
     similar_images, total_imgs = find_similar_images(image_directory, hash_length)
     removed = 0
-
     for img_paths in similar_images.values():
         if len(img_paths) > 1:
             # randomly choose one image to keep
@@ -45,5 +51,4 @@ if __name__ == "__main__":
         print(f'usage: python3 {sys.argv[0]} </path/to/images> <hash_length>')
         sys.exit(1)
 
-    image_directory = sys.argv[1]
-    remove_similar_images(image_directory, hash_length=int(sys.argv[2]))
+    remove_similar_images(*sys.argv[1:])
