@@ -3,7 +3,7 @@ import sys
 import shutil
 import random
 
-IMGS_TO_COLLECT = 500
+IMGS_TO_COLLECT = None
 
 def main(folder, *labels):
 
@@ -19,8 +19,10 @@ def main(folder, *labels):
 
 	count = 0
 	for file in annotations:
-		if count >= IMGS_TO_COLLECT:
-			break
+		if IMGS_TO_COLLECT is not None:
+			if count >= IMGS_TO_COLLECT:
+				break
+
 		with open(os.path.join(label_folder,file), 'r') as f:
 			lines = f.readlines()
 		annos = [line.strip() for line in lines]
@@ -33,7 +35,10 @@ def main(folder, *labels):
 			img = os.path.join(img_folder, img)
 			shutil.copy(img, save_folder)
 
-	print(f"\ncollected {len(os.listdir(save_folder))}/{IMGS_TO_COLLECT} images containing either class id: {labels} and saved at {save_folder}")
+	if IMGS_TO_COLLECT is not None:
+		print(f"\ncollected {count}/{IMGS_TO_COLLECT} images containing either class id: {labels} and saved at {save_folder}")
+	else:
+		print(f"\ncollected {count} images containing either class id: {labels} and saved at {save_folder}")
 
 
 if __name__ == "__main__":

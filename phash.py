@@ -29,7 +29,7 @@ def remove_similar_images(image_directory, hash_length):
         sys.exit(1)
 
     print(f'using hash size: {hash_length}\n.\n.\n.')
-    similar_images, total_imgs = find_similar_images(image_directory, hash_length)
+    similar_images, total_imgs = find_similar_images(image_directory, int(hash_length))
     removed = 0
     for img_paths in similar_images.values():
         if len(img_paths) > 1:
