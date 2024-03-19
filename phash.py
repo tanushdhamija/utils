@@ -7,8 +7,7 @@ import imagehash
 def find_similar_images(image_directory, hash_length):
     image_paths = [os.path.join(image_directory, f) for f in os.listdir(image_directory) if f.endswith(('.png', '.jpg', '.jpeg'))]
     if len(image_paths) == 0:
-        print(f'no images found in directory {image_directory}')
-        sys.exit(1)
+        sys.exit(f'no images found in directory {image_directory}')
 
     similar_images = {}
     for img_path in image_paths:
@@ -25,8 +24,7 @@ def find_similar_images(image_directory, hash_length):
 
 def remove_similar_images(image_directory, hash_length):
     if not os.path.exists(image_directory):
-        print(f'directory {image_directory} does not exist.')
-        sys.exit(1)
+        sys.exit(f'directory {image_directory} does not exist.')
 
     print(f'using hash size: {hash_length}\n.\n.\n.')
     similar_images, total_imgs = find_similar_images(image_directory, int(hash_length))
@@ -48,7 +46,6 @@ def remove_similar_images(image_directory, hash_length):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print(f'usage: python3 {sys.argv[0]} </path/to/images> <hash_length>')
-        sys.exit(1)
+        sys.exit(f'usage: python3 {sys.argv[0]} </path/to/images> <hash_length>')
 
     remove_similar_images(*sys.argv[1:])

@@ -133,13 +133,11 @@ def main(filename):
 if __name__ == "__main__":
 
     if len(sys.argv) != 2:
-        print("Usage: python3 jsontoyolo.py <filename.json>")
-        sys.exit(1)
+        sys.exit("usage: python3 jsontoyolo.py <filename.json>")
 
     filename = sys.argv[1]
     if not os.path.isfile(filename):
-        print("File not found:", filename)
-        sys.exit(1)
+        sys.exit("File not found:", filename)
 
     main(filename)
     

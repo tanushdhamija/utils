@@ -43,7 +43,6 @@ def main(folder, *labels):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print(f"usage: python {sys.argv[0]} </path/to/annotations/folder> <labels to find separated by space>")
-        sys.exit(1)
+        sys.exit(f"usage: python3 {sys.argv[0]} </path/to/annotations/folder> <labels to find separated by space>")
 
     main(*sys.argv[1:])

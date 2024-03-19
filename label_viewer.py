@@ -85,8 +85,7 @@ def display_annotated_images(image_folder, annotation_folder):
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print(f"usage: python {sys.argv[0]} </path/to/directory/containing/'images','labels','classes.txt'")
-        sys.exit(1)
+        sys.exit(f"usage: python {sys.argv[0]} </path/to/directory/containing/'images','labels','classes.txt'")
 
     directory = sys.argv[1]
     image_folder = os.path.join(directory,'images')
@@ -94,8 +93,7 @@ if __name__ == '__main__':
     class_file = os.path.join(directory,'classes.txt')
 
     if not os.path.exists(image_folder) or not os.path.exists(annotation_folder) or not os.path.isfile(class_file):
-        print("make sure that the given directory contains: 'images', 'labels', 'classes.txt'")
-        sys.exit(1)
+        sys.exit("make sure that the given directory contains: 'images', 'labels', 'classes.txt'")
 
     with open(class_file, 'r') as file:
         lines = file.readlines()
