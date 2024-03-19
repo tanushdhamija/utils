@@ -25,11 +25,9 @@ def main(folder, *labels):
 			lines = f.readlines()
 		annos = [line.strip() for line in lines]
 		ids = [anno.split(' ')[0] for anno in annos]
-		found = False
-		for label in labels:
-			if label in ids:
-				found = True
-		if found:
+		
+		found = [True if label in ids else False for label in labels]
+		if True in found:
 			count += 1
 			img = os.path.splitext(file)[0] + ".jpg"
 			img = os.path.join(img_folder, img)
