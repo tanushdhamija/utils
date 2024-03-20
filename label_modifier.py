@@ -3,7 +3,9 @@ import sys
 
 def modify_label(folder, old_label, new_label):
 
-    labels = [os.path.join(folder,label) for label in os.listdir(folder) if label != 'classes.txt']
+    labels = [os.path.join(folder,label) for label in os.listdir(folder) if label.endswith('.txt') and label != 'classes.txt']
+    if len(labels) == 0:
+        sys.exit(f'no .txt files found in {folder}')
 
     print(f'changing class_id from {old_label} to {new_label} for {len(labels)} files...')
     for label in labels:
@@ -29,9 +31,8 @@ def modify_label(folder, old_label, new_label):
     print('\ndone.')
 
 
-
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        sys.exit(f"usage: python {sys.argv[0]} </path/to/labels> <class_id to replace> <new class_id>")
+        sys.exit(f"usage: python3 {sys.argv[0]} </path/to/labels> <class_id to replace> <new class_id>")
 
     modify_label(*sys.argv[1:])
