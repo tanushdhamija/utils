@@ -19,14 +19,12 @@ def main(folder, *labels):
 
 	count = 0
 	for file in annotations:
-		if IMGS_TO_COLLECT is not None:
-			if count >= IMGS_TO_COLLECT:
-				break
+		if IMGS_TO_COLLECT is not None and count >= IMGS_TO_COLLECT:
+			break
 
 		with open(os.path.join(label_folder,file), 'r') as f:
 			lines = f.readlines()
-		annos = [line.strip() for line in lines]
-		ids = [anno.split(' ')[0] for anno in annos]
+		ids = [line.split(' ')[0] for line in lines]
 		
 		found = [True if label in ids else False for label in labels]
 		if True in found:

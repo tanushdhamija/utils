@@ -16,7 +16,6 @@ def modify_label(folder, old_label, new_label):
         # replace labels
         newlines = []
         for line in lines:
-            # line = line.strip()
             class_id = line.split(" ")[0]
             if class_id == old_label:
                 new_line = new_label + " " + " ".join(line.split(" ")[1:])

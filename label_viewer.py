@@ -3,6 +3,7 @@ import os
 import sys
 from random import randint
 
+
 def resize_image(image):
     screen_width, screen_height = 1280, 720
 
@@ -16,8 +17,10 @@ def resize_image(image):
 
     return image
 
+
 def get_color():
     return [(randint(0,255),randint(0,255),randint(0,255)) for _ in range(len(CLASSES))]
+
 
 def parse_annotation(annotation_file):
     with open(annotation_file, 'r') as f:
@@ -29,6 +32,7 @@ def parse_annotation(annotation_file):
         parsed_annotations.append((int(class_id), x_center, y_center, width, height))
     
     return parsed_annotations
+
 
 def draw_annotations(image, annotations):
     im_height, im_width, _ = image.shape
@@ -44,6 +48,7 @@ def draw_annotations(image, annotations):
         cv2.putText(image, f'{CLASSES[class_id]}', (x1,y1-5), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
     return image
+
 
 def display_annotated_images(image_folder, annotation_folder):
     image_files = sorted(os.listdir(image_folder))
@@ -85,7 +90,7 @@ def display_annotated_images(image_folder, annotation_folder):
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        sys.exit(f"usage: python {sys.argv[0]} </path/to/directory/containing/'images','labels','classes.txt'")
+        sys.exit(f"usage: python3 {sys.argv[0]} </path/to/directory/containing/'images','labels','classes.txt'")
 
     directory = sys.argv[1]
     image_folder = os.path.join(directory,'images')

@@ -23,7 +23,6 @@ def main(folder):
     for file in all_files:
         with open(file, 'r') as f:
             lines = f.readlines()
-        # annos = [line.strip() for line in lines]
         if len(lines) == 0:
             negatives += 1
             continue

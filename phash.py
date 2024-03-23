@@ -4,6 +4,7 @@ import sys
 from PIL import Image
 import imagehash
 
+
 def find_similar_images(image_directory, hash_length):
     image_paths = [os.path.join(image_directory, f) for f in os.listdir(image_directory) if f.endswith(('.png', '.jpg', '.jpeg'))]
     if len(image_paths) == 0:

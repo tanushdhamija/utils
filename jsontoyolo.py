@@ -79,7 +79,6 @@ def rotated_rectangle(label):
     return label_x, label_y, label_w, label_h
 
 
-
 def main(filename):
 
     SAVE_FOLDER = "labels"
@@ -98,13 +97,13 @@ def main(filename):
     for anno in data:
         txt_filename = os.path.join(SAVE_FOLDER, f"{os.path.splitext(anno['image'].split('/')[-1])[0]}.txt")
 
+        # create empty .txt file for negative
         if not 'label' in anno.keys():
-            # create empty .txt file for negative
             with open(txt_filename, 'w') as f:
                 pass
             continue
 
-        # collect annotations
+        # convert to YOLO annotations
         labels = anno['label']
         annotations = []
         for label in labels:
@@ -131,7 +130,6 @@ def main(filename):
 
 
 if __name__ == "__main__":
-
     if len(sys.argv) != 2:
         sys.exit("usage: python3 jsontoyolo.py <filename.json>")
 
