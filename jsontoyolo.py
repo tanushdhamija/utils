@@ -13,8 +13,7 @@ import json
 import sys
 import math
 
-#CLASSES = ['boot', 'glove', 'hard_hat', 'vest']
-CLASSES = ['plate']
+CLASSES = ["mishandling", "person_on_box"]
 
 # https://github.com/HumanSignal/label-studio-converter/blob/master/label_studio_converter/converter.py#L901
 def rotated_rectangle(label):
@@ -82,8 +81,10 @@ def rotated_rectangle(label):
 def main(filename):
 
     SAVE_FOLDER = "labels"
-    if not os.path.exists(SAVE_FOLDER):
-        os.makedirs(SAVE_FOLDER)
+    os.makedirs(SAVE_FOLDER, exist_ok=False)
+
+    if os.path.isfile('classes.txt'):
+        sys.exit("ERROR: classes.txt already exists")
 
     with open('classes.txt', 'w') as f:
         for class_name in CLASSES:
@@ -93,12 +94,13 @@ def main(filename):
     with open(filename, 'r') as f:
         data = json.load(f)
     
-    print(f'No. of annotations found: {len(data)}')
+    negatives = 0
     for anno in data:
         txt_filename = os.path.join(SAVE_FOLDER, f"{os.path.splitext(anno['image'].split('/')[-1])[0]}.txt")
 
         # create empty .txt file for negative
         if not 'label' in anno.keys():
+            negatives += 1
             with open(txt_filename, 'w') as f:
                 pass
             continue
@@ -127,15 +129,16 @@ def main(filename):
                         f.write(f"{l} ")
 
     print(f".\n.\n.\nsaved at '{SAVE_FOLDER}'")
+    print(f"no. of images: {len(data)} ({len(data)-negatives} + {negatives})")
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        sys.exit("usage: python3 jsontoyolo.py <filename.json>")
+        sys.exit("USAGE: python3 jsontoyolo.py /path/to/file.json")
 
     filename = sys.argv[1]
     if not os.path.isfile(filename):
-        sys.exit("File not found:", filename)
+        sys.exit(f"File not found: {os.path.abspath(filename)}")
 
     main(filename)
     

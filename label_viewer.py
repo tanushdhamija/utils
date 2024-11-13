@@ -2,9 +2,28 @@ import cv2
 import os
 import sys
 from random import randint
+from PIL import Image
+
+
+def png_to_jpg(file):
+
+    img = Image.open(file)
+    if img.mode in ('RGBA', 'LA'):
+        # convert RGBA to RGB if necessary
+        background = Image.new('RGB', img.size, (255, 255, 255))
+        background.paste(img, mask=img.split()[-1])
+        img = background
+
+    jpg_filename = os.path.splitext(file)[0] + ".jpg"
+    img.convert('RGB').save(jpg_filename, 'JPEG', quality=95)
+    img.close()
+    os.remove(file)
+
+    return jpg_filename
 
 
 def resize_image(image):
+
     screen_width, screen_height = 1280, 720
 
     if image.shape[1] > screen_width or image.shape[0] > screen_height:
@@ -23,6 +42,7 @@ def get_color():
 
 
 def parse_annotation(annotation_file):
+
     with open(annotation_file, 'r') as f:
         annotations = f.readlines()
 
@@ -35,8 +55,8 @@ def parse_annotation(annotation_file):
 
 
 def draw_annotations(image, annotations):
-    im_height, im_width, _ = image.shape
 
+    im_height, im_width, _ = image.shape
     for annotation in annotations:
         class_id, x_center, y_center, width, height = annotation
         x1 = int((x_center - width/2) * im_width)
@@ -51,54 +71,58 @@ def draw_annotations(image, annotations):
 
 
 def display_annotated_images(image_folder, annotation_folder):
-    image_files = sorted(os.listdir(image_folder))
-    annotation_files = sorted(os.listdir(annotation_folder))
+
+    image_files = [os.path.join(image_folder, file) for file in sorted(os.listdir(image_folder))]
+    annotation_files = [os.path.join(annotation_folder, file) for file in sorted(os.listdir(annotation_folder))]
     if len(image_files) != len(annotation_files): 
-        print(f"mismatch in no. of images & labels (images: {len(image_files)}, labels: {len(annotation_files)})")
-        sys.exit(1)
+        sys.exit(f"ERROR: mismatch in no. of images & labels (images: {len(image_files)}, labels: {len(annotation_files)})")
     
     current_index = 0
     while current_index < len(annotation_files):
+
+        image_file = image_files[current_index]
+        if image_file.lower().endswith(".png"):
+            image_file = png_to_jpg(image_file)
+        annotation_file = os.path.join(annotation_folder, os.path.basename(image_file).split(".")[0] + ".txt")
+
+        if annotation_file not in annotation_files:
+            print(f"'{annotation_file}' does not exist for image '{image_file}'. skipping..")
+            continue
+
+        image = cv2.imread(image_file)
+        annotations = parse_annotation(annotation_file)
+        annotated_image = draw_annotations(image, annotations)
+        annotated_image = resize_image(annotated_image)
+
         counter = f'{current_index+1}/{len(annotation_files)}: '
-        annotation_file = annotation_files[current_index]
-        image_name = os.path.splitext(annotation_file)[0] + ".jpg"
-        if image_name in image_files:
-            image_path = os.path.join(image_folder, image_name)
-            annotation_path = os.path.join(annotation_folder, annotation_file)
+        if len(annotations) == 0:
+            cv2.imshow(f'{counter} {os.path.basename(image_file)} (NEGATIVE)', annotated_image)
+        else:
+            cv2.imshow(f'{counter} {os.path.basename(image_file)}', annotated_image)
+        key = cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
-            image = cv2.imread(image_path)
-            annotations = parse_annotation(annotation_path)
-            annotated_image = draw_annotations(image, annotations)
-            annotated_image = resize_image(annotated_image)
-
-            if len(annotations) == 0:
-                cv2.imshow(f'{counter} {image_name} (NEGATIVE)', annotated_image)
-            else:
-                cv2.imshow(f'{counter} {image_name}', annotated_image)
-            key = cv2.waitKey(0)
-            cv2.destroyAllWindows()
-
-            if key & 0xFF == ord('q'):
-                break
-            elif key & 0xFF == ord('n'):
-                current_index = min(current_index + 1, len(annotation_files) - 1)
-            elif key & 0xFF == ord('p'):
-                current_index = max(current_index - 1, 0)
+        if key & 0xFF == ord('q'):
+            break
+        elif key & 0xFF == ord('n'):
+            current_index = min(current_index + 1, len(annotation_files) - 1)
+        elif key & 0xFF == ord('p'):
+            current_index = max(current_index - 1, 0)
 
     cv2.destroyAllWindows()
     
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        sys.exit(f"usage: python3 {sys.argv[0]} </path/to/directory/containing/'images','labels','classes.txt'")
+        sys.exit(f"USAGE: python3 {sys.argv[0]} /path/to/directory/containing/'images','labels','classes.txt'")
 
     directory = sys.argv[1]
-    image_folder = os.path.join(directory,'images')
-    annotation_folder = os.path.join(directory,'labels')
-    class_file = os.path.join(directory,'classes.txt')
+    image_folder = os.path.join(directory, 'images')
+    annotation_folder = os.path.join(directory, 'labels')
+    class_file = os.path.join(directory, 'classes.txt')
 
     if not os.path.exists(image_folder) or not os.path.exists(annotation_folder) or not os.path.isfile(class_file):
-        sys.exit("make sure that the given directory contains: 'images', 'labels', 'classes.txt'")
+        sys.exit("ERROR: make sure that the given directory contains: 'images', 'labels', 'classes.txt'")
 
     with open(class_file, 'r') as file:
         lines = file.readlines()
