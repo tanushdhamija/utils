@@ -1,5 +1,6 @@
 from psutil import cpu_percent, virtual_memory, disk_usage
 import subprocess
+import time
 
 def get_system_stats():
     try:
@@ -39,13 +40,14 @@ def get_system_stats():
 
 
 if __name__ == "__main__":
-    stats = get_system_stats()
-    if stats:
-        print(f"CPU: {stats['cpu']}% \nDisk: {stats['disk']}% \nRAM: {stats['ram']}%")
-        for i, gpu in enumerate(stats['gpus']):
-            print(f"\nGPU {i}:")
-            print(f"  Utilization: {gpu['utilization_gpu']}%")
-            print(f"  VRAM: {gpu['vram']}%")
-            print(f"  Power: {gpu['power']}W")
-            print(f"  Temperature: {gpu['temperature']}°C")
-
+    while True:
+        stats = get_system_stats()
+        if stats:
+            print(f"{'-'*30}\nCPU: {stats['cpu']}% \nDisk: {stats['disk']}% \nRAM: {stats['ram']}%")
+            for i, gpu in enumerate(stats['gpus']):
+                print(f"\nGPU {i}:")
+                print(f"  Utilization: {gpu['utilization_gpu']}%")
+                print(f"  VRAM: {gpu['vram']}%")
+                print(f"  Power: {gpu['power']}W")
+                print(f"  Temperature: {gpu['temperature']}°C")
+        time.sleep(2)
