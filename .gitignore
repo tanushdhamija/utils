@@ -1,6 +1,4 @@
 .DS_Store
-images
-labels
-*.txt
-*.jpg
+dataset
+*.zip
 *.json

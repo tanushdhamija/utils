@@ -3,6 +3,7 @@ import os
 import sys
 from random import randint
 from PIL import Image
+from screeninfo import get_monitors
 
 
 def png_to_jpg(file):
@@ -22,18 +23,29 @@ def png_to_jpg(file):
     return jpg_filename
 
 
-def resize_image(image):
+def get_screen_resolution():
+    for monitor in get_monitors():
+        if monitor.is_primary:
+            return monitor.width, monitor.height
+    return 1920, 1080 # fallback
 
-    screen_width, screen_height = 1280, 720
 
-    if image.shape[1] > screen_width or image.shape[0] > screen_height:
-        ratio_width = screen_width / image.shape[1]
-        ratio_height = screen_height / image.shape[0]
-        scale_factor = min(ratio_width, ratio_height)
-        new_width = int(image.shape[1] * scale_factor)
-        new_height = int(image.shape[0] * scale_factor)
-        image = cv2.resize(image, (new_width, new_height))
+def resize_image_to_screen(image):
 
+    screen_width, screen_height = get_screen_resolution()
+    original_height, original_width = image.shape[:2]
+    
+    if original_width > screen_width or original_height > screen_height:
+        width_scale = screen_width / original_width
+        height_scale = screen_height / original_height
+        
+        scale_factor = min(width_scale, height_scale)
+        
+        new_width = int(original_width * scale_factor)
+        new_height = int(original_height * scale_factor)
+        
+        resized_image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+        return resized_image
     return image
 
 
@@ -64,26 +76,49 @@ def draw_annotations(image, annotations):
         x2 = int((x_center + width/2) * im_width)
         y2 = int((y_center + height/2) * im_height)
 
-        cv2.rectangle(image, (x1, y1), (x2, y2), COLORS[class_id], 2)
-        cv2.putText(image, f'{CLASSES[class_id]}', (x1,y1-5), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        cv2.rectangle(image, (x1, y1), (x2, y2), COLORS[class_id], 3)
+        cv2.putText(image, f'{CLASSES[class_id]}', (x1, y1-5), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
     return image
 
 
-def display_annotated_images(image_folder, annotation_folder):
+def filter_by_class(image_folder, annotation_folder, classes):
 
-    image_files = [os.path.join(image_folder, file) for file in sorted(os.listdir(image_folder))]
-    annotation_files = [os.path.join(annotation_folder, file) for file in sorted(os.listdir(annotation_folder))]
+    images = []
+    annotations = []
+
+    for file in os.listdir(image_folder):
+        annos = parse_annotation(os.path.join(annotation_folder, f"{os.path.splitext(file)[0]}.txt"))
+        classes_in_file = [CLASSES[anno[0]] for anno in annos]
+        for c in classes_in_file:
+            if c in classes:
+                images.append(os.path.join(image_folder, file))
+                annotations.append(os.path.join(annotation_folder, f"{os.path.splitext(file)[0]}.txt"))
+
+    return images, annotations
+
+
+def display_annotated_images(image_folder, annotation_folder, all=True):
+
+    if all:
+        # view all classes
+        image_files = [os.path.join(image_folder, file) for file in sorted(os.listdir(image_folder))]
+        annotation_files = [os.path.join(annotation_folder, file) for file in sorted(os.listdir(annotation_folder))]
+    else:
+        # view chosen class/es
+        classes_to_view = ["open_damage_boxes"]
+        image_files, annotation_files = filter_by_class(image_folder, annotation_folder, classes=classes_to_view)
+
     if len(image_files) != len(annotation_files): 
         sys.exit(f"ERROR: mismatch in no. of images & labels (images: {len(image_files)}, labels: {len(annotation_files)})")
-    
+
     current_index = 0
     while current_index < len(annotation_files):
 
         image_file = image_files[current_index]
         if image_file.lower().endswith(".png"):
             image_file = png_to_jpg(image_file)
-        annotation_file = os.path.join(annotation_folder, os.path.basename(image_file).split(".")[0] + ".txt")
+        annotation_file = os.path.join(annotation_folder, f"{os.path.splitext(os.path.basename(image_file))[0]}.txt")
 
         if annotation_file not in annotation_files:
             print(f"'{annotation_file}' does not exist for image '{image_file}'. skipping..")
@@ -92,7 +127,7 @@ def display_annotated_images(image_folder, annotation_folder):
         image = cv2.imread(image_file)
         annotations = parse_annotation(annotation_file)
         annotated_image = draw_annotations(image, annotations)
-        annotated_image = resize_image(annotated_image)
+        annotated_image = resize_image_to_screen(annotated_image)
 
         counter = f'{current_index+1}/{len(annotation_files)}: '
         if len(annotations) == 0:
@@ -105,6 +140,9 @@ def display_annotated_images(image_folder, annotation_folder):
         if key & 0xFF == ord('q'):
             break
         elif key & 0xFF == ord('n'):
+            if current_index == len(annotation_files) - 1:
+                print("Reached the end of all images.")
+                break
             current_index = min(current_index + 1, len(annotation_files) - 1)
         elif key & 0xFF == ord('p'):
             current_index = max(current_index - 1, 0)
@@ -131,4 +169,4 @@ if __name__ == '__main__':
     COLORS = get_color()
 
     print("press 'q' to quit, 'n' for next image, 'p' for previous image")
-    display_annotated_images(image_folder, annotation_folder)
+    display_annotated_images(image_folder, annotation_folder, all=False)
